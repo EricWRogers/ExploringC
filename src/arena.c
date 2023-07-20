@@ -46,11 +46,18 @@ void* arena_realloc(Arena* _arena, void* _target, size_t _size) {
     unsigned int count = vec_count(&(_arena->_freeList));
     int index = -1;
 
-    // TODO : replace with BST bacause it is always sorted
-    for(unsigned int i = 0; i < count; i++) {
-        if (_arena->_freeList[i].data == _target) {
-            index = i;
-            continue;
+    int left = 0, right = count - 1, mid = 0;
+
+    while(left <= right) {
+        mid = left + (right - left) / 2;
+
+        if (_arena->_freeList[mid].data == _target) {
+            index = mid;
+            left = right + 1;
+        } else if (_arena->_freeList[mid].data < _target) {
+            left = mid + 1;  // target is in the right half
+        } else {
+            right = mid - 1; // target is in the left half
         }
     }
 
@@ -87,11 +94,20 @@ void* arena_realloc(Arena* _arena, void* _target, size_t _size) {
 void arena_dealloc(Arena* _arena, void* _target) {
     unsigned int count = vec_count(&(_arena->_freeList));
 
-    // TODO : replace with BST bacause it is always sorted
-    for(unsigned int i = 0; i < count; i++) {
-        if (_arena->_freeList[i].data == _target) {
-            _arena_dealloc(_arena, i);
-            continue;
+    int left = 0;
+    int right = count - 1;
+    int mid = 0;
+
+    while(left <= right) {
+        mid = left + (right - left) / 2;
+
+        if (_arena->_freeList[mid].data == _target) {
+            _arena_dealloc(_arena, mid);
+            return;
+        } else if (_arena->_freeList[mid].data < _target) {
+            left = mid + 1;  // target is in the right half
+        } else {
+            right = mid - 1; // target is in the left half
         }
     }
 }
